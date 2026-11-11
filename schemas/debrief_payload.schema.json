@@ -1,0 +1,93 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "SurgicalBuildingDebriefPayload",
+  "type": "object",
+  "required": [
+    "job_id",
+    "subagent_role",
+    "status",
+    "payload_sha256",
+    "artifacts_written",
+    "telemetry",
+    "fix_directives"
+  ],
+  "properties": {
+    "job_id": {
+      "type": "string"
+    },
+    "subagent_role": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "APPROVED",
+        "REJECTED",
+        "NEEDS_USER_GATE"
+      ]
+    },
+    "payload_sha256": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "artifacts_written": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "telemetry": {
+      "type": "object",
+      "properties": {
+        "vertex_count": {
+          "type": "integer"
+        },
+        "face_count": {
+          "type": "integer"
+        },
+        "non_manifold_edges": {
+          "type": "integer"
+        },
+        "max_penetration_m": {
+          "type": "number"
+        },
+        "silhouette_iou": {
+          "type": "number"
+        },
+        "a_star_walkway_valid": {
+          "type": "boolean"
+        }
+      }
+    },
+    "fix_directives": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "target_id",
+          "issue",
+          "corrective_action"
+        ],
+        "properties": {
+          "target_id": {
+            "type": "string"
+          },
+          "issue": {
+            "type": "string"
+          },
+          "corrective_action": {
+            "type": "string"
+          },
+          "delta_vector": {
+            "type": "array",
+            "items": {
+              "type": "number"
+            },
+            "minItems": 3,
+            "maxItems": 3
+          }
+        }
+      }
+    }
+  }
+}

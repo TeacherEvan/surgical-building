@@ -1,0 +1,84 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "SurgicalBuildingJobCard",
+  "type": "object",
+  "required": [
+    "job_id",
+    "subagent_role",
+    "engine",
+    "workspace_root",
+    "allowed_write_paths",
+    "input_manifests",
+    "constraints"
+  ],
+  "properties": {
+    "job_id": {
+      "type": "string",
+      "pattern": "^job_[a-f0-9]{8}$"
+    },
+    "subagent_role": {
+      "type": "string",
+      "enum": [
+        "Photogrammetry-Investigator",
+        "Zone-Investigator",
+        "Furniture-Builder",
+        "Placement-Solver",
+        "Character-Rigger",
+        "Scene-Compiler",
+        "QA-Reviewer"
+      ]
+    },
+    "engine": {
+      "type": "string",
+      "enum": [
+        "opencv_metrology",
+        "blender_bpy",
+        "threejs",
+        "svg_parametric",
+        "build123d",
+        "godot_headless"
+      ]
+    },
+    "workspace_root": {
+      "type": "string"
+    },
+    "allowed_write_paths": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "input_manifests": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "constraints": {
+      "type": "object",
+      "required": [
+        "max_vertices",
+        "max_memory_mb",
+        "timeout_sec",
+        "require_manifold"
+      ],
+      "properties": {
+        "max_vertices": {
+          "type": "integer",
+          "maximum": 65535
+        },
+        "max_memory_mb": {
+          "type": "integer",
+          "maximum": 2048
+        },
+        "timeout_sec": {
+          "type": "integer",
+          "maximum": 180
+        },
+        "require_manifold": {
+          "type": "boolean"
+        }
+      }
+    }
+  }
+}

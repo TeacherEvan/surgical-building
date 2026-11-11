@@ -1,0 +1,32 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# Environments
+.env
+.venv
+env/
+venv/
+ENV/
+
+# Temporary runtimes & workspaces
+workspace/
+workspace_test/
+*.tmp
+*.log
+
+# 3D temporary & backup files
+*.blend1
+*.blend2
+*.swp
+*.swo
+
+# OS / Editor artifacts
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.sublime-project
+*.sublime-workspace

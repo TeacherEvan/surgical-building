@@ -1,0 +1,113 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "SpatialManifest",
+  "type": "object",
+  "required": [
+    "image_resolution",
+    "camera_telemetry",
+    "metric_dimensions_m",
+    "pbr_palette_srgb"
+  ],
+  "properties": {
+    "image_resolution": {
+      "type": "array",
+      "items": {
+        "type": "integer"
+      },
+      "minItems": 2,
+      "maxItems": 2
+    },
+    "camera_telemetry": {
+      "type": "object",
+      "required": [
+        "focal_length_px",
+        "horizontal_fov_deg",
+        "vanishing_points"
+      ],
+      "properties": {
+        "focal_length_px": {
+          "type": "number"
+        },
+        "horizontal_fov_deg": {
+          "type": "number"
+        },
+        "vanishing_points": {
+          "type": "object",
+          "required": [
+            "vp_x",
+            "vp_y",
+            "vp_z"
+          ],
+          "properties": {
+            "vp_x": {
+              "type": "array",
+              "items": {
+                "type": "number"
+              }
+            },
+            "vp_y": {
+              "type": "array",
+              "items": {
+                "type": "number"
+              }
+            },
+            "vp_z": {
+              "type": "array",
+              "items": {
+                "type": "number"
+              }
+            }
+          }
+        }
+      }
+    },
+    "metric_dimensions_m": {
+      "type": "object",
+      "required": [
+        "width_x",
+        "depth_y",
+        "height_z",
+        "estimated_stories",
+        "wall_thickness_ext",
+        "wall_thickness_int"
+      ],
+      "properties": {
+        "width_x": {
+          "type": "number",
+          "minimum": 1.0
+        },
+        "depth_y": {
+          "type": "number",
+          "minimum": 1.0
+        },
+        "height_z": {
+          "type": "number",
+          "minimum": 2.0
+        },
+        "estimated_stories": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "roof_pitch_deg": {
+          "type": "number",
+          "default": 0.0
+        },
+        "wall_thickness_ext": {
+          "type": "number",
+          "default": 0.24
+        },
+        "wall_thickness_int": {
+          "type": "number",
+          "default": 0.12
+        }
+      }
+    },
+    "pbr_palette_srgb": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "pattern": "^#[0-9a-fA-F]{6}$"
+      }
+    }
+  }
+}

@@ -1,0 +1,117 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "InteriorProgram",
+  "type": "object",
+  "required": [
+    "occupancy_classification",
+    "confidence_score",
+    "lighting_spec",
+    "circulation_rules",
+    "zones"
+  ],
+  "properties": {
+    "occupancy_classification": {
+      "type": "string",
+      "enum": [
+        "BUSINESS_COMMERCIAL",
+        "PRIVATE_RESIDENTIAL"
+      ]
+    },
+    "confidence_score": {
+      "type": "number",
+      "minimum": 0.0,
+      "maximum": 1.0
+    },
+    "lighting_spec": {
+      "type": "object",
+      "required": [
+        "kelvin",
+        "lux_target",
+        "fixture_type"
+      ],
+      "properties": {
+        "kelvin": {
+          "type": "integer"
+        },
+        "lux_target": {
+          "type": "integer"
+        },
+        "fixture_type": {
+          "type": "string"
+        }
+      }
+    },
+    "circulation_rules": {
+      "type": "object",
+      "required": [
+        "min_aisle_width_m",
+        "door_clear_arc_m",
+        "ada_turn_radius_m"
+      ],
+      "properties": {
+        "min_aisle_width_m": {
+          "type": "number"
+        },
+        "door_clear_arc_m": {
+          "type": "number"
+        },
+        "ada_turn_radius_m": {
+          "type": "number"
+        }
+      }
+    },
+    "zones": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "zone_id",
+          "area_ratio",
+          "furniture_manifest"
+        ],
+        "properties": {
+          "zone_id": {
+            "type": "string"
+          },
+          "area_ratio": {
+            "type": "number"
+          },
+          "furniture_manifest": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": [
+                "id",
+                "type",
+                "width",
+                "depth",
+                "height",
+                "wall_snap"
+              ],
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "type": {
+                  "type": "string"
+                },
+                "width": {
+                  "type": "number"
+                },
+                "depth": {
+                  "type": "number"
+                },
+                "height": {
+                  "type": "number"
+                },
+                "wall_snap": {
+                  "type": "boolean"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

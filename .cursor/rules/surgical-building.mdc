@@ -1,0 +1,17 @@
+---
+description: "Deterministic 2D-to-3D architectural, prop, and skeletal character reconstruction engine using Blender, Three.js, SVG, and Build123d."
+alwaysApply: false
+---
+
+# Surgical-Building: Autonomous 2D/3D Reconstruction & Spatial Orchestration
+
+When asked to construct, model, or reconstruct 3D/2D buildings, architecture, Google Maps replicas, procedural interiors, or rigged 3D characters from 2D images:
+
+1. **Activate Surgical-Building Skill:** Load the full skill specification from `SKILL.md` or `~/.cursor/skills/surgical-building/SKILL.md`.
+2. **Never Guess Dimensions:** Execute `scripts/photogrammetry_investigator.py` to extract vanishing points ($V_x, V_y, V_z$), camera focal length, and metric anchors (doors $2.10\text{m}$, commercial stories $3.90\text{m}$, residential $2.85\text{m}$).
+3. **Mandatory Interactive Collaboration Gate:**
+   - **Architecture:** Pause after exterior metrology is locked and ask:
+     > *"Exterior projective metrology is locked ([W]m x [D]m x [H]m). Should I improvise and construct the full interior layout and furnishings to the best of my capabilities?"*
+   - **Character:** Ask whether static mesh or skeletal rig is required, recommend 4 tailored procedural actions (`Idle_Breathe`, `Locomotion_Run`, `Jump_Arc`, `Action_Interact`), and present 3 platform options (Three.js WebGL, Godot 4.x, or SVG 2.5D).
+4. **Collision-Free Layouts:** Use `scripts/sat_layout_solver.py` to enforce zero SAT/OBB collision overlap, $0.95\text{m}$ door swing clearances, and continuous $A^*$ navigable paths ($\ge 0.85\text{m}$).
+5. **Headless Verification:** Run `scripts/blender_qa_reviewer.py` to audit non-manifold edges ($0$), vertex bounds ($\le 65,535$), and 4-angle diagnostic silhouette IoU ($\ge 0.82$).
