@@ -46,7 +46,7 @@ DEFAULT_TARGETS = [
 
 def install_to_directory(src_root: Path, dest_root: Path):
     dest_root.mkdir(parents=True, exist_ok=True)
-    items_to_copy = ("SKILL.md", "README.md", "runtime", "schemas", "scripts", "references")
+    items_to_copy = ("SKILL.md", "README.md", "runtime", "schemas", "scripts", "references", "surgical_building", "examples")
 
     for item in items_to_copy:
         s = src_root / item

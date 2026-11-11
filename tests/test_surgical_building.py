@@ -6,6 +6,8 @@ Runs via standard library unittest: `python3 -m unittest discover tests`
 import json
 import os
 import shutil
+import subprocess
+import sys
 import tempfile
 import unittest
 from pathlib import Path
@@ -20,8 +22,18 @@ from scripts.sat_layout_solver import (
     solve_room_layout,
 )
 from scripts.zone_classifier import classify_and_generate_program
-from scripts.svg_to_build123d_shell import generate_svg_blueprint
+from scripts.svg_to_build123d_shell import (
+    generate_svg_blueprint,
+    build_parametric_shell_cad,
+    build_parametric_shell_fallback_stl,
+)
 from scripts.threejs_scene_compiler import compile_threejs_module
+from scripts.photogrammetry_investigator import (
+    compute_spatial_manifest_analytical,
+    compute_spatial_manifest,
+)
+from scripts.blender_qa_reviewer import run_full_qa, parse_stl_metrics
+from scripts.conform import check as conform_check
 
 
 class TestSchemas(unittest.TestCase):
@@ -45,21 +57,18 @@ class TestSchemas(unittest.TestCase):
 
 class TestSATLayoutSolver(unittest.TestCase):
     def test_obb_disjoint(self):
-        # Two non-overlapping boxes
         b1 = OBB2D(id="b1", cx=1.0, cy=1.0, half_w=0.5, half_d=0.5, yaw=0.0)
         b2 = OBB2D(id="b2", cx=3.0, cy=1.0, half_w=0.5, half_d=0.5, yaw=0.0)
         overlap = sat_penetration_area(b1, b2)
         self.assertEqual(overlap, 0.0)
 
     def test_obb_overlapping(self):
-        # Two overlapping boxes
         b1 = OBB2D(id="b1", cx=1.0, cy=1.0, half_w=0.5, half_d=0.5, yaw=0.0)
         b2 = OBB2D(id="b2", cx=1.4, cy=1.0, half_w=0.5, half_d=0.5, yaw=0.0)
         overlap = sat_penetration_area(b1, b2)
         self.assertGreater(overlap, 0.0)
 
     def test_obb_rotated_collision(self):
-        # 45-degree rotated box
         b1 = OBB2D(id="b1", cx=2.0, cy=2.0, half_w=0.5, half_d=0.5, yaw=0.785398)
         b2 = OBB2D(id="b2", cx=2.5, cy=2.0, half_w=0.2, half_d=0.2, yaw=0.0)
         overlap = sat_penetration_area(b1, b2)
@@ -67,14 +76,15 @@ class TestSATLayoutSolver(unittest.TestCase):
 
     def test_solve_room_layout_executes(self):
         room_bounds = (0.0, 0.0, 6.0, 5.0)
-        door_pos = (0.9, 0.0, 0.95)
+        door_pos = (0.9, 0.2, 0.95)
         props = [
             {"id": "desk", "width": 1.4, "depth": 0.8, "wall_snap": True},
             {"id": "chair", "width": 0.6, "depth": 0.6, "wall_snap": False},
         ]
-        res = solve_room_layout(room_bounds=room_bounds, door_pos=door_pos, props=props, iterations=200)
+        res = solve_room_layout(room_bounds=room_bounds, door_pos=door_pos, props=props, iterations=500)
         self.assertIn("placements", res)
         self.assertEqual(len(res["placements"]), 2)
+        self.assertTrue(res["collision_free"])
         for p in res["placements"]:
             self.assertIn("id", p)
             self.assertIn("position", p)
@@ -105,11 +115,9 @@ class TestSurgicalSandbox(unittest.TestCase):
 
     def test_circuit_breaker_revision_limit(self):
         role = "Placement-Solver"
-        # 3 rejected cycles are allowed
         for i in range(3):
             payload = {"job_id": f"job_{i}", "status": "REJECTED", "cycle": i}
             self.guard.register_and_verify_debrief(role, payload)
-        # 4th rejected cycle raises RuntimeError
         with self.assertRaises(RuntimeError) as ctx:
             self.guard.register_and_verify_debrief(role, {"job_id": "job_3", "status": "REJECTED", "cycle": 3})
         self.assertIn("Circuit Breaker Tripped", str(ctx.exception))
@@ -119,7 +127,6 @@ class TestSurgicalSandbox(unittest.TestCase):
         payload2 = {"telemetry": {"val": 1.0}, "job_id": "job_01", "status": "APPROVED"}
         h1 = self.guard.register_and_verify_debrief("Worker1", payload1)
         self.assertTrue(h1)
-        # Identical payload re-registered trips deduplication halt
         with self.assertRaises(RuntimeError) as ctx:
             self.guard.register_and_verify_debrief("Worker1", payload2)
         self.assertIn("Deduplication Halt", str(ctx.exception))
@@ -153,6 +160,53 @@ class TestZoneClassifier(unittest.TestCase):
         self.assertEqual(res["occupancy_classification"], "PRIVATE_RESIDENTIAL")
         self.assertIn("lighting_spec", res)
         self.assertLessEqual(res["lighting_spec"]["kelvin"], 3000)
+
+
+class TestPhotogrammetry(unittest.TestCase):
+    def test_analytical_fallback_manifest(self):
+        res = compute_spatial_manifest_analytical(width_px=1920, height_px=1080)
+        self.assertIn("metric_dimensions_m", res)
+        self.assertIn("camera_telemetry", res)
+        self.assertIn("vanishing_points", res["camera_telemetry"])
+        dims = res["metric_dimensions_m"]
+        self.assertGreater(dims["width_x"], 0)
+        self.assertGreater(dims["height_z"], 0)
+
+
+class TestWatertightCSGAndQA(unittest.TestCase):
+    def setUp(self):
+        self.temp_dir = tempfile.mkdtemp()
+
+    def tearDown(self):
+        shutil.rmtree(self.temp_dir, ignore_errors=True)
+
+    def test_pure_python_stl_generation_and_qa_approval(self):
+        manifest = {
+            "metric_dimensions_m": {
+                "width_x": 10.0,
+                "depth_y": 8.0,
+                "height_z": 3.8,
+                "wall_thickness_ext": 0.24,
+                "estimated_stories": 1,
+            }
+        }
+        m_path = os.path.join(self.temp_dir, "manifest.json")
+        stl_path = os.path.join(self.temp_dir, "shell.stl")
+        report_path = os.path.join(self.temp_dir, "qa_debrief.json")
+        Path(m_path).write_text(json.dumps(manifest), encoding="utf-8")
+
+        build_parametric_shell_fallback_stl(manifest, stl_path)
+        self.assertTrue(os.path.exists(stl_path))
+
+        verts, tris, b_min, b_max = parse_stl_metrics(stl_path)
+        self.assertGreater(tris, 0)
+        self.assertAlmostEqual(b_max[0] - b_min[0], 10.0, places=1)
+        self.assertAlmostEqual(b_max[1] - b_min[1], 8.0, places=1)
+        self.assertAlmostEqual(b_max[2] - b_min[2], 3.8, places=1)
+
+        rep = run_full_qa(stl_path, m_path, report_path)
+        self.assertEqual(rep["status"], "APPROVED")
+        self.assertEqual(rep["telemetry"]["non_manifold_edges"], 0)
 
 
 class TestCompilers(unittest.TestCase):
@@ -198,6 +252,12 @@ class TestCompilers(unittest.TestCase):
         content = Path(out_ts).read_text(encoding="utf-8")
         self.assertIn("BUILDING_SPEC", content)
         self.assertIn("mountSurgicalScene", content)
+
+
+class TestConformance(unittest.TestCase):
+    def test_skill_passes_conformance(self):
+        problems = conform_check(PROJECT_ROOT)
+        self.assertEqual(problems, [], f"Conformance violations: {problems}")
 
 
 if __name__ == "__main__":

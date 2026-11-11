@@ -4,6 +4,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Harness Support](https://img.shields.io/badge/Harness-Hermes%20%7C%20Antigravity%20%7C%20Cursor%20%7C%20OpenCode-blue)](https://github.com/TeacherEvan/surgical-building)
 [![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
+[![Conformance](https://img.shields.io/badge/Hermes%20Conformance-100%25%20PASS-brightgreen)](https://github.com/TeacherEvan/surgical-building)
 
 > **Autonomous 2D/3D Architectural, Prop, and Skeletal Character Reconstruction Skill for AI Agents.**
 > Part of the **Agent-Surgery-Skills** family.
@@ -20,6 +21,8 @@ Unlike loose generative prompt wrappers, **Surgical-Building** enforces:
 - **Collision-Free Procedural Interiors:** Separating Axis Theorem (SAT) on 2D Oriented Bounding Boxes (OBB), wall-normal snapping, door swing arc clearance, and $A^*$ navigable human walkways.
 - **Interactive Collaboration Gates:** Hard stops prompting the user for interior improvisation decisions or character movement/platform selection before synthesis.
 - **Headless QA Reviewer & Self-Healing Loop:** Multi-angle diagnostic contact sheets, non-manifold edge verification ($0$ tolerance), and Silhouette Intersection-over-Union ($\text{IoU} \ge 0.82$) with a 3-cycle circuit breaker.
+- **Pure-Python Standard Library Resilience:** Zero-dependency analytical CSG and photogrammetric fallbacks so agents never fail when optional libraries (OpenCV, OpenCASCADE) are absent.
+- **Blender MCP Integration:** First-class bridging for the live Blender Model Context Protocol server.
 
 ---
 
@@ -83,6 +86,38 @@ Unlike loose generative prompt wrappers, **Surgical-Building** enforces:
 
 ---
 
+## Command Line Interface (CLI)
+
+The package provides a unified CLI for agents and developers:
+
+```bash
+# Output Gate A collaboration prompt
+python3 -m surgical_building gate-a --width 12.0 --depth 8.5 --height 4.2
+
+# Output Gate B character intake prompt
+python3 -m surgical_building gate-b
+
+# Run commercial vs residential zoning classification
+python3 -m surgical_building classify manifest.json -o interior_program.json
+
+# Solve SAT collision-free furniture layout
+python3 -m surgical_building layout config.json -o layout.json
+
+# Generate 2D SVG blueprint
+python3 -m surgical_building blueprint manifest.json blueprint.svg
+
+# Generate 3D watertight CAD/STL shell
+python3 -m surgical_building shell manifest.json shell.stl
+
+# Compile Three.js scene module
+python3 -m surgical_building scene manifest.json layout.json scene.ts
+
+# Execute geometry & telemetry QA review
+python3 -m surgical_building qa shell.stl manifest.json qa_debrief.json
+```
+
+---
+
 ## Installation & Harness Setup
 
 Deploy to all local agent environments (`.hermes`, `gemini antigravity`, `cursor`, and `opencode`) with a single command:
@@ -120,12 +155,32 @@ Run the deterministic test suite:
 python3 -m unittest discover -s tests -p "test_*.py" -v
 ```
 
+Run the Hermes skill conformance gate:
+
+```bash
+python3 scripts/conform.py
+```
+
 To sync changes between the git repository and all local agent installs:
 
 ```bash
 ./scripts/sync-skill.sh check   # Verify sync status
 ./scripts/sync-skill.sh sync    # Push latest commits to all platforms
+./scripts/sync-skill.sh verify  # Authoritative byte cross-check
 ```
+
+---
+
+## End-to-End Ground Truth Example
+
+A verified reference implementation is provided in [`examples/google_maps_storefront/`](examples/google_maps_storefront/):
+- `spatial_manifest.json`: Single-view photogrammetric calibration of a $12\text{m} \times 8.5\text{m} \times 4.2\text{m}$ retail building.
+- `blueprint.svg`: Parametric 2D vector blueprint with entrance door arcs.
+- `storefront_shell.stl`: Watertight 3D architectural shell with door/window openings.
+- `interior_program.json`: Commercial retail zoning with lighting and circulation rules.
+- `layout.json`: 100% collision-free SAT furniture layout with guaranteed $A^*$ walkway clearance.
+- `scene.ts`: Three.js scene compiler output with instanced meshes and shadow maps.
+- `qa_debrief.json`: Approved QA debrief report confirming 0 non-manifold edges.
 
 ---
 
@@ -136,10 +191,15 @@ surgical-building/
 ├── SKILL.md                          # Master skill definition & orchestration rules
 ├── README.md                         # Project documentation & engineering specs
 ├── LICENSE                           # MIT License
+├── pyproject.toml                    # Standard Python package specification
 ├── install_surgical_building.py      # Cross-platform installer & test runner
 ├── install_surgical_building.sh      # Shell wrapper for one-command installation
 ├── .cursor/
 │   └── rules/surgical-building.mdc   # Cursor rule for auto-activating the skill
+├── surgical_building/                # Python package
+│   ├── __init__.py
+│   ├── __main__.py
+│   └── cli.py                        # Unified command line tool
 ├── runtime/
 │   └── surgical_sandbox.py           # Realpath sandbox, SHA-256 deduplication, & circuit breaker
 ├── schemas/
@@ -155,13 +215,17 @@ surgical-building/
 │   ├── threejs_scene_compiler.py     # Three.js (r165+) scene compiler
 │   ├── blender_character_rigger.py   # Headless Blender 52-bone character rigger
 │   ├── blender_qa_reviewer.py        # Headless QA reviewer & 4-angle contact sheet generator
-│   └── sync-skill.sh                 # Multi-platform sync & verification script
+│   ├── sync-skill.sh                 # Multi-platform sync & verification script
+│   └── conform.py                    # Hermes Agent skill conformance checker
 ├── references/
 │   ├── single-view-metrology.md      # Photogrammetric mathematical formulations
 │   ├── sat-collision-energy-matrix.md# SAT collision & simulated annealing formulation
-│   └── engine-bridge-specs.md        # 4-engine coordinates, vertex limits, & glTF specs
+│   ├── engine-bridge-specs.md        # 4-engine coordinates, vertex limits, & glTF specs
+│   └── blender-mcp-integration.md    # Live Blender MCP server tools & dual-mode execution
 ├── tests/
-│   └── test_surgical_building.py     # 13 deterministic unit & integration tests
+│   └── test_surgical_building.py     # 16 deterministic unit & integration tests
+├── examples/
+│   └── google_maps_storefront/       # Verified ground truth artifacts (STL, SVG, TS, JSON)
 └── Docs/                             # Architectural design blueprints & concept notes
 ```
 

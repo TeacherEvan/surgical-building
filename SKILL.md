@@ -1,6 +1,6 @@
 ---
 name: surgical-building
-description: "Use when reconstructing 3D/2D architecture, Google Maps replicas, procedural interiors, or rigged characters from images using Blender, Three.js, SVG, and Build123d/Godot."
+description: "Use when reconstructing 3D/2D buildings or characters."
 version: 2.1.0
 author: "TeacherEvan, Hermes Agent"
 license: MIT
@@ -21,6 +21,7 @@ metadata:
 | `references/single-view-metrology.md` | Single-view photogrammetry, vanishing point triad, Criminisi cross-ratio, and datum scale invariants |
 | `references/sat-collision-energy-matrix.md` | Separating Axis Theorem (SAT), door-swing arc clearance, and $A^*$ navigable corridor solvers |
 | `references/engine-bridge-specs.md` | Coordinate conversions ($+Z$ vs $+Y$), vertex budgets, glTF 2.0 handshake, and Draco compression |
+| `references/blender-mcp-integration.md` | Dual-mode Blender headless vs. live MCP session execution and tool bridging |
 | `schemas/spatial_manifest.schema.json` | JSON contract for extracted exterior geometry, camera parameters, and PBR palettes |
 | `schemas/interior_program.schema.json` | JSON contract for commercial vs. residential zoning, room specs, and furniture manifests |
 | `schemas/jobcard.schema.json` | Task card schema for dispatching sandboxed subagent workers |

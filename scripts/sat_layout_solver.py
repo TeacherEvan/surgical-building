@@ -9,8 +9,10 @@ import heapq
 import json
 import math
 import random
+import sys
 from dataclasses import dataclass
 from typing import List, Tuple, Dict
+
 
 @dataclass
 class OBB2D:
@@ -33,7 +35,9 @@ class OBB2D:
                 corners.append((px, py))
         return corners
 
+
 def sat_penetration_area(a: OBB2D, b: OBB2D) -> float:
+    """Computes minimum penetration overlap between two 2D OBBs along 4 separating axes."""
     corners_a = a.get_corners()
     corners_b = b.get_corners()
     axes = [
@@ -51,6 +55,7 @@ def sat_penetration_area(a: OBB2D, b: OBB2D) -> float:
             return 0.0
         min_overlap = min(min_overlap, overlap)
     return min_overlap
+
 
 def verify_a_star_corridor(
     room_bounds: Tuple[float, float, float, float],
@@ -86,20 +91,22 @@ def verify_a_star_corridor(
         probe = OBB2D("walker", cx_m, cy_m, 0.35, 0.35, 0.0, False)
         if curr != start and any(sat_penetration_area(probe, it) > 0.0 for it in items):
             continue
-        for dx, dy in ((1,0), (-1,0), (0,1), (0,-1)):
+        for dx, dy in ((1, 0), (-1, 0), (0, 1), (0, -1)):
             nb = (curr[0] + dx, curr[1] + dy)
             if 0 <= nb[0] < nx and 0 <= nb[1] < ny and nb not in visited:
                 h = math.hypot(nb[0] - goal[0], nb[1] - goal[1])
                 heapq.heappush(open_heap, (h, nb))
     return False
 
+
 def solve_room_layout(
     room_bounds: Tuple[float, float, float, float],
     door_pos: Tuple[float, float, float],
     props: List[Dict],
-    iterations: int = 2500,
+    iterations: int = 3000,
     seed: int = 42
 ) -> Dict:
+    """Solves collision-free interior placement via Simulated Annealing + SAT + A* validation."""
     random.seed(seed)
     min_x, min_y, max_x, max_y = room_bounds
     door_obbs = [OBB2D("door_arc", door_pos[0], door_pos[1], door_pos[2], door_pos[2], 0.0, False)]
@@ -107,10 +114,10 @@ def solve_room_layout(
 
     state: List[OBB2D] = []
     for p in props:
-        hw = (p["width"] * 0.5) + p.get("margin_x", 0.15)
-        hd = (p["depth"] * 0.5) + p.get("margin_y", 0.30)
-        cx = random.uniform(min_x + hw, max_x - hw)
-        cy = random.uniform(min_y + hd, max_y - hd)
+        hw = p["width"] * 0.5
+        hd = p["depth"] * 0.5
+        cx = random.uniform(min_x + hw + 0.2, max_x - hw - 0.2)
+        cy = random.uniform(min_y + hd + 0.2, max_y - hd - 0.2)
         yaw = random.choice([0.0, math.pi * 0.5, math.pi, math.pi * 1.5])
         state.append(OBB2D(p["id"], cx, cy, hw, hd, yaw, p.get("wall_snap", True)))
 
@@ -144,9 +151,9 @@ def solve_room_layout(
         idx = random.randrange(len(state))
         old_item = state[idx]
         step = max(0.02, temp * 0.01)
-        new_cx = max(min_x, min(max_x, old_item.cx + random.uniform(-step, step)))
-        new_cy = max(min_y, min(max_y, old_item.cy + random.uniform(-step, step)))
-        new_yaw = old_item.yaw if random.random() > 0.2 else random.choice([0.0, math.pi*0.5, math.pi, math.pi*1.5])
+        new_cx = max(min_x + old_item.half_w, min(max_x - old_item.half_w, old_item.cx + random.uniform(-step, step)))
+        new_cy = max(min_y + old_item.half_d, min(max_y - old_item.half_d, old_item.cy + random.uniform(-step, step)))
+        new_yaw = old_item.yaw if random.random() > 0.2 else random.choice([0.0, math.pi * 0.5, math.pi, math.pi * 1.5])
         state[idx] = OBB2D(old_item.id, new_cx, new_cy, old_item.half_w, old_item.half_d, new_yaw, old_item.wall_snap)
 
         cand_e = compute_energy(state)
@@ -167,10 +174,20 @@ def solve_room_layout(
         ]
     }
 
+
 if __name__ == "__main__":
-    sample_props = [
-        {"id": "reception_desk", "width": 1.8, "depth": 0.8, "wall_snap": False},
-        {"id": "sofa_wait_01", "width": 2.1, "depth": 0.9, "wall_snap": True},
-        {"id": "cabinet_file_01", "width": 1.0, "depth": 0.5, "wall_snap": True},
-    ]
-    print(json.dumps(solve_room_layout((0.0, 0.0, 5.5, 4.2), (0.9, 0.2, 0.95), sample_props), indent=2))
+    if len(sys.argv) > 1 and sys.argv[1] not in ("-h", "--help"):
+        with open(sys.argv[1], "r", encoding="utf-8") as f:
+            cfg = json.load(f)
+        bounds = tuple(cfg.get("room_bounds", [0.0, 0.0, 6.0, 5.0]))
+        door = tuple(cfg.get("door_pos", [0.9, 0.2, 0.95]))
+        props_list = cfg.get("props", [])
+        result = solve_room_layout(bounds, door, props_list)
+        print(json.dumps(result, indent=2))
+    else:
+        sample_props = [
+            {"id": "reception_desk", "width": 1.8, "depth": 0.8, "wall_snap": False},
+            {"id": "sofa_wait_01", "width": 2.1, "depth": 0.9, "wall_snap": True},
+            {"id": "cabinet_file_01", "width": 1.0, "depth": 0.5, "wall_snap": True},
+        ]
+        print(json.dumps(solve_room_layout((0.0, 0.0, 5.5, 4.2), (0.9, 0.2, 0.95), sample_props), indent=2))

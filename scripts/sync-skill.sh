@@ -38,6 +38,8 @@ ASSETS=(
   "schemas"
   "scripts"
   "references"
+  "surgical_building"
+  "examples"
 )
 
 sync_to_dir() {

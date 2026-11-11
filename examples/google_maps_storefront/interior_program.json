@@ -1,0 +1,76 @@
+{
+  "occupancy_classification": "BUSINESS_COMMERCIAL",
+  "confidence_score": 0.85,
+  "lighting_spec": {
+    "kelvin": 4500,
+    "lux_target": 500,
+    "fixture_type": "recessed_troffer_grid"
+  },
+  "circulation_rules": {
+    "min_aisle_width_m": 1.5,
+    "door_clear_arc_m": 1.1,
+    "ada_turn_radius_m": 1.52
+  },
+  "zones": [
+    {
+      "zone_id": "reception_lobby",
+      "area_ratio": 0.3,
+      "furniture_manifest": [
+        {
+          "id": "counter_reception_01",
+          "type": "reception_desk",
+          "width": 2.2,
+          "depth": 0.85,
+          "height": 1.1,
+          "wall_snap": false
+        },
+        {
+          "id": "sofa_waiting_01",
+          "type": "commercial_sofa",
+          "width": 2.0,
+          "depth": 0.85,
+          "height": 0.78,
+          "wall_snap": true
+        },
+        {
+          "id": "kiosk_terminal_01",
+          "type": "checkin_kiosk",
+          "width": 0.6,
+          "depth": 0.55,
+          "height": 1.45,
+          "wall_snap": true
+        }
+      ]
+    },
+    {
+      "zone_id": "open_work_floor",
+      "area_ratio": 0.7,
+      "furniture_manifest": [
+        {
+          "id": "workstation_pod_01",
+          "type": "desk_cluster_4",
+          "width": 2.8,
+          "depth": 1.6,
+          "height": 0.75,
+          "wall_snap": false
+        },
+        {
+          "id": "chair_task_01",
+          "type": "ergonomic_chair",
+          "width": 0.65,
+          "depth": 0.65,
+          "height": 0.95,
+          "wall_snap": false
+        },
+        {
+          "id": "storage_cabinet_01",
+          "type": "steel_credenza",
+          "width": 1.6,
+          "depth": 0.5,
+          "height": 0.85,
+          "wall_snap": true
+        }
+      ]
+    }
+  ]
+}

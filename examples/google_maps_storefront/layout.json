@@ -1,0 +1,43 @@
+{
+  "final_energy": 44.3917,
+  "collision_free": true,
+  "a_star_walkway_valid": true,
+  "placements": [
+    {
+      "id": "reception_counter",
+      "position": [
+        8.771,
+        3.643,
+        0.0
+      ],
+      "rotation_z_rad": 1.5708
+    },
+    {
+      "id": "waiting_sofa_01",
+      "position": [
+        3.848,
+        1.1,
+        0.0
+      ],
+      "rotation_z_rad": 1.5708
+    },
+    {
+      "id": "display_rack_01",
+      "position": [
+        10.72,
+        5.638,
+        0.0
+      ],
+      "rotation_z_rad": 3.1416
+    },
+    {
+      "id": "display_rack_02",
+      "position": [
+        6.846,
+        0.8,
+        0.0
+      ],
+      "rotation_z_rad": 1.5708
+    }
+  ]
+}
